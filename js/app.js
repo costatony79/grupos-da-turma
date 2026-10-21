@@ -77,6 +77,7 @@
     abas.forEach((a) => {
       const ativa = a === aba;
       a.setAttribute("aria-selected", String(ativa));
+      a.classList.toggle("active", ativa);
       a.tabIndex = ativa ? 0 : -1;
       $("#" + a.getAttribute("aria-controls")).hidden = !ativa;
     });
@@ -101,9 +102,9 @@
   function calcular() {
     const alunos = inteiro(calcAlunos, 1, 500);
     const grupos = inteiro(calcGrupos, 1, 200);
-    if (alunos === null) return (saidaCalc.innerHTML = `<div class="msg erro">Digite o número de alunos (de 1 a 500).</div>`);
+    if (alunos === null) return (saidaCalc.innerHTML = `<div class="alert alert-danger mb-0">Digite o número de alunos (de 1 a 500).</div>`);
     const erro = verificarDivisao(alunos, grupos);
-    if (erro) return (saidaCalc.innerHTML = `<div class="msg erro">${esc(erro)}</div>`);
+    if (erro) return (saidaCalc.innerHTML = `<div class="alert alert-danger mb-0">${esc(erro)}</div>`);
 
     const d = descreverDivisao(alunos, grupos);
     const base = Math.floor(alunos / grupos), resto = alunos % grupos;
@@ -112,17 +113,17 @@
       : `${alunos} ÷ ${grupos} = ${base}, com resto ${resto}. Os ${plural(resto, "aluno que sobra", "alunos que sobram")} ${resto === 1 ? "entra" : "entram"} um em cada grupo.`;
     const mesas = d.t
       .map((qtd, i) => `
-        <div class="mesa" style="--h:${corDoGrupo(i)}">
-          <div class="nome-grupo"><span>Grupo ${i + 1}</span><span>${qtd}</span></div>
+        <div class="col"><div class="card h-100 mesa" style="--h:${corDoGrupo(i)}"><div class="card-body p-2">
+          <div class="d-flex justify-content-between small fw-bold text-muted text-uppercase mb-2"><span>Grupo ${i + 1}</span><span>${qtd}</span></div>
           <div class="cadeiras" aria-hidden="true">${'<span class="cadeira"></span>'.repeat(Math.min(qtd, 60))}</div>
-        </div>`)
+        </div></div></div>`)
       .join("");
     saidaCalc.innerHTML = `
-      <div class="resposta">
-        <p class="grande">${alunos} alunos em ${grupos} grupos:<br><b>${esc(d.frase)}</b></p>
-        <p class="dica">${esc(conta)}</p>
-        <div class="mesas">${mesas}</div>
-      </div>`;
+      <div class="card shadow-sm"><div class="card-body p-4">
+        <h2 class="h3 mb-2">${alunos} alunos em ${grupos} grupos:<br><span class="text-primary">${esc(d.frase)}</span></h2>
+        <p class="text-muted">${esc(conta)}</p>
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-5 g-2">${mesas}</div>
+      </div></div>`;
   }
   [calcAlunos, calcGrupos].forEach((el) => el.addEventListener("input", calcular));
   $("#form-calcular").addEventListener("submit", (e) => e.preventDefault());
@@ -175,7 +176,7 @@
   }
 
   campoNomes.addEventListener("input", () => {
-    if (planilha) mostrarFonte(`<span class="selo">EDITADA</span> Lista da planilha <b>${esc(planilha.nome)}</b> com alterações suas.`);
+    if (planilha) mostrarFonte(`<span class="badge bg-secondary me-1">EDITADA</span> Lista da planilha <b>${esc(planilha.nome)}</b> com alterações suas.`);
     else mostrarFonte(`${plural(lerNomes().length, "nome digitado", "nomes digitados")}.`);
     atualizarResumos();
   });
@@ -223,11 +224,11 @@
     campoNomes.value = nomes.join("\n");
     const total = lerNomes().length;
     mostrarFonte(
-      `<span class="selo">PLANILHA</span> <b>${esc(planilha.nome)}</b>` +
+      `<span class="badge bg-success me-1">PLANILHA</span> <b>${esc(planilha.nome)}</b>` +
         (planilha.abas.length > 1 ? `, aba “${esc(planilha.abas[planilha.aba].nome)}”` : "") +
         `: ${plural(total, "aluno", "alunos")}.`
     );
-    if (total === 0) mostrarFonte(`<span class="msg erro">Não encontrei nomes nessa coluna. Escolha outra coluna acima.</span>`);
+    if (total === 0) mostrarFonte(`<span class="d-block alert alert-danger py-2 mb-0">Não encontrei nomes nessa coluna. Escolha outra coluna acima.</span>`);
     atualizarResumos();
   }
 
@@ -266,7 +267,7 @@
   async function abrirArquivo(arquivo) {
     if (!arquivo) return;
     if (typeof XLSX === "undefined") {
-      return mostrarFonte(`<span class="msg erro">Não consegui carregar o leitor de planilhas. Recarregue a página.</span>`);
+      return mostrarFonte(`<span class="d-block alert alert-danger py-2 mb-0">Não consegui carregar o leitor de planilhas. Recarregue a página.</span>`);
     }
     try {
       const dados = await arquivo.arrayBuffer();
@@ -283,7 +284,7 @@
     } catch (e) {
       planilha = null;
       blocoColuna.hidden = true;
-      mostrarFonte(`<span class="msg erro">Não consegui ler “${esc(arquivo.name)}”. Use uma planilha do Excel (.xlsx ou .xls), do LibreOffice (.ods) ou um arquivo .csv.</span>`);
+      mostrarFonte(`<span class="d-block alert alert-danger py-2 mb-0">Não consegui ler “${esc(arquivo.name)}”. Use uma planilha do Excel (.xlsx ou .xls), do LibreOffice (.ods) ou um arquivo .csv.</span>`);
     }
   }
 
@@ -333,11 +334,11 @@
   function cartoesGrupos(grupos, extra) {
     return grupos
       .map((g, i) => `
-        <article class="grupo" style="--h:${corDoGrupo(i)}">
-          <h3>Grupo ${g.numero} <small>${plural(g.membros.length, "aluno", "alunos")}</small></h3>
+        <div class="col"><article class="card h-100 shadow-sm grupo" style="--h:${corDoGrupo(i)}"><div class="card-body">
+          <h3 class="h5 card-title d-flex justify-content-between align-items-baseline">Grupo ${g.numero} <span class="badge bg-light text-dark fw-normal">${plural(g.membros.length, "aluno", "alunos")}</span></h3>
           ${extra ? extra(g) : ""}
-          <ol>${g.membros.map((m) => `<li>${esc(m)}</li>`).join("")}</ol>
-        </article>`)
+          <ol class="mb-0 ps-3">${g.membros.map((m) => `<li>${esc(m)}</li>`).join("")}</ol>
+        </div></article></div>`)
       .join("");
   }
 
@@ -345,25 +346,25 @@
     const nomes = lerNomes();
     const grupos = inteiro($("#sort-grupos"), 1, 200);
     const erro = verificarDivisao(nomes.length, grupos);
-    if (erro) return (saidaSort.innerHTML = `<div class="msg erro">${esc(erro)}</div>`);
+    if (erro) return (saidaSort.innerHTML = `<div class="alert alert-danger mb-0">${esc(erro)}</div>`);
     const modo = $('input[name="sort-modo"]:checked').value;
     const lista = formarGrupos(nomes, grupos, modo);
     ultimoSorteio = { lista, modo };
     const comoFoi = { sortear: "sorteados", ordem: "na ordem da lista", alfabetica: "em ordem alfabética" }[modo];
     saidaSort.innerHTML = `
-      <div class="cabeca-resultado">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
-          <h2>${plural(grupos, "grupo", "grupos")}, alunos ${comoFoi}</h2>
-          <p>${nomes.length} alunos: ${esc(descreverDivisao(nomes.length, grupos).frase)}. Gerado em ${hoje()}.</p>
+          <h2 class="h4 mb-1">${plural(grupos, "grupo", "grupos")}, alunos ${comoFoi}</h2>
+          <p class="text-muted mb-0">${nomes.length} alunos: ${esc(descreverDivisao(nomes.length, grupos).frase)}. Gerado em ${hoje()}.</p>
         </div>
-        <div class="botoes">
-          ${modo === "sortear" ? '<button type="button" class="btn giz" id="sort-de-novo">Sortear de novo</button>' : ""}
-          <button type="button" class="btn" id="sort-copiar">Copiar</button>
-          <button type="button" class="btn" id="sort-excel">Baixar Excel</button>
-          <button type="button" class="btn" id="sort-imprimir">Imprimir</button>
+        <div class="botoes d-flex flex-wrap gap-2">
+          ${modo === "sortear" ? '<button type="button" class="btn btn-warning" id="sort-de-novo">Sortear de novo</button>' : ""}
+          <button type="button" class="btn btn-outline-secondary" id="sort-copiar">Copiar</button>
+          <button type="button" class="btn btn-success" id="sort-excel">Baixar Excel</button>
+          <button type="button" class="btn btn-outline-secondary" id="sort-imprimir">Imprimir</button>
         </div>
       </div>
-      <div class="grupos">${cartoesGrupos(lista)}</div>`;
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">${cartoesGrupos(lista)}</div>`;
 
     $("#sort-de-novo")?.addEventListener("click", sortear);
     $("#sort-imprimir").addEventListener("click", () => window.print());
@@ -425,13 +426,13 @@
     const nomes = lerNomes();
     const qtdGrupos = inteiro($("#sem-grupos"), 1, 200);
     const erro = verificarDivisao(nomes.length, qtdGrupos);
-    if (erro) return (saidaSem.innerHTML = `<div class="msg erro">${esc(erro)}</div>`);
+    if (erro) return (saidaSem.innerHTML = `<div class="alert alert-danger mb-0">${esc(erro)}</div>`);
     const porDia = inteiro($("#sem-por-dia"), 1, 20);
-    if (porDia === null) return (saidaSem.innerHTML = `<div class="msg erro">Digite quantos grupos se apresentam por dia (de 1 a 20).</div>`);
+    if (porDia === null) return (saidaSem.innerHTML = `<div class="alert alert-danger mb-0">Digite quantos grupos se apresentam por dia (de 1 a 20).</div>`);
     const inicio = dataLocal($("#sem-inicio").value);
-    if (!inicio) return (saidaSem.innerHTML = `<div class="msg erro">Escolha a data da primeira apresentação.</div>`);
+    if (!inicio) return (saidaSem.innerHTML = `<div class="alert alert-danger mb-0">Escolha a data da primeira apresentação.</div>`);
     const diasSemana = new Set($$("#sem-dias input:checked").map((c) => Number(c.value)));
-    if (!diasSemana.size) return (saidaSem.innerHTML = `<div class="msg erro">Marque pelo menos um dia da semana com aula da disciplina.</div>`);
+    if (!diasSemana.size) return (saidaSem.innerHTML = `<div class="alert alert-danger mb-0">Marque pelo menos um dia da semana com aula da disciplina.</div>`);
 
     const avisos = [];
     const { datas: puladas, invalidas } = lerDatasPuladas($("#sem-pular").value, inicio);
@@ -451,7 +452,7 @@
 
     const datas = montarDatas(Math.ceil(qtdGrupos / porDia), inicio, diasSemana, puladas);
     if (datas.length * porDia < qtdGrupos) {
-      return (saidaSem.innerHTML = `<div class="msg erro">Não encontrei dias de aula suficientes. Confira os dias da semana marcados e as datas sem aula.</div>`);
+      return (saidaSem.innerHTML = `<div class="alert alert-danger mb-0">Não encontrei dias de aula suficientes. Confira os dias da semana marcados e as datas sem aula.</div>`);
     }
     if (chaveData(datas[0]) !== chaveData(inicio)) {
       avisos.push(`A data escolhida (${mostraData(inicio)}) não é um dia de aula marcado ou está entre as datas sem aula. O seminário começa em ${mostraData(datas[0])}.`);
@@ -472,26 +473,26 @@
 
     const ultimo = datas[datas.length - 1];
     saidaSem.innerHTML = `
-      <div class="cabeca-resultado">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
-          <h2>Seminário: ${plural(qtdGrupos, "grupo", "grupos")} em ${plural(datas.length, "dia", "dias")}</h2>
-          <p>De ${esc(mostraData(datas[0]))} a ${esc(mostraData(ultimo))}, ${plural(porDia, "grupo", "grupos")} por dia. ${nomes.length} alunos: ${esc(descreverDivisao(nomes.length, qtdGrupos).frase)}.</p>
+          <h2 class="h4 mb-1">Seminário: ${plural(qtdGrupos, "grupo", "grupos")} em ${plural(datas.length, "dia", "dias")}</h2>
+          <p class="text-muted mb-0">De ${esc(mostraData(datas[0]))} a ${esc(mostraData(ultimo))}, ${plural(porDia, "grupo", "grupos")} por dia. ${nomes.length} alunos: ${esc(descreverDivisao(nomes.length, qtdGrupos).frase)}.</p>
         </div>
-        <div class="botoes">
-          <button type="button" class="btn giz" id="sem-de-novo">Sortear de novo</button>
-          <button type="button" class="btn" id="sem-copiar">Copiar</button>
-          <button type="button" class="btn" id="sem-excel">Baixar Excel</button>
-          <button type="button" class="btn" id="sem-imprimir">Imprimir</button>
+        <div class="botoes d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-warning" id="sem-de-novo">Sortear de novo</button>
+          <button type="button" class="btn btn-outline-secondary" id="sem-copiar">Copiar</button>
+          <button type="button" class="btn btn-success" id="sem-excel">Baixar Excel</button>
+          <button type="button" class="btn btn-outline-secondary" id="sem-imprimir">Imprimir</button>
         </div>
       </div>
-      ${avisos.map((a) => `<div class="msg aviso nao-imprimir">${a}</div>`).join("")}
-      <div class="tabela-rolagem">
-        <table>
-          <thead><tr><th>Data</th><th>Grupo</th><th>Tema</th><th>Integrantes</th></tr></thead>
+      ${avisos.map((a) => `<div class="alert alert-warning nao-imprimir mb-0">${a}</div>`).join("")}
+      <div class="card shadow-sm"><div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th>Data</th><th>Grupo</th><th>Tema</th><th>Integrantes</th></tr></thead>
           <tbody>${linhasTabela}</tbody>
         </table>
-      </div>
-      <div class="grupos">${cartoesGrupos(grupos, (g) => `<p class="tema">${esc(g.tema)}</p><p class="quando">${esc(mostraData(g.data))}${porDia > 1 ? ` · ${g.ordemNoDia}º a apresentar` : ""}</p>`)}</div>`;
+      </div></div>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">${cartoesGrupos(grupos, (g) => `<p class="fw-bold text-primary mb-0">${esc(g.tema)}</p><p class="small text-muted mb-2">${esc(mostraData(g.data))}${porDia > 1 ? ` · ${g.ordemNoDia}º a apresentar` : ""}</p>`)}</div>`;
 
     $("#sem-de-novo").addEventListener("click", seminario);
     $("#sem-imprimir").addEventListener("click", () => window.print());
@@ -525,7 +526,7 @@
 
   // ---------- Início: com uma turma de exemplo, para a tela já mostrar o resultado ----------
   campoNomes.value = EXEMPLO.join("\n");
-  mostrarFonte(`<span class="selo">EXEMPLO</span> Turma fictícia com ${EXEMPLO.length} alunos. Troque pela sua planilha ou pelos seus nomes.`);
+  mostrarFonte(`<span class="badge bg-warning text-dark me-1">EXEMPLO</span> Turma fictícia com ${EXEMPLO.length} alunos. Troque pela sua planilha ou pelos seus nomes.`);
   let abaInicial = abas[0];
   try {
     const salva = localStorage.getItem("grupos-aba");

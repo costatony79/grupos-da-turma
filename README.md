@@ -33,7 +33,9 @@ Para testar no computador, basta abrir o `index.html` no navegador.
 
 ## Arquivos
 
-- `index.html`: a página e o visual.
+- `index.html`: a página.
 - `js/app.js`: as contas, o sorteio e o cronograma.
+- `css/bootstrap.min.css`: visual do [Bootstrap 5.0.2](https://getbootstrap.com)
+  (licença MIT, em `css/bootstrap-LICENSE.txt`).
 - `js/xlsx.full.min.js`: biblioteca [SheetJS](https://sheetjs.com) para ler e gravar
   planilhas (licença Apache 2.0, em `js/xlsx-LICENSE.txt`).
